@@ -72,22 +72,14 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Build App Bundle
-        run: flutter build appbundle --release
-
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk knock_knock-${{ needs.setup.outputs.version }}.apk
-
-      - name: Rename AAB
-        run: mv build/app/outputs/bundle/release/app-release.aab knock_knock-${{ needs.setup.outputs.version }}.aab
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
           name: android
-          path: |
-            knock_knock-${{ needs.setup.outputs.version }}.apk
-            knock_knock-${{ needs.setup.outputs.version }}.aab
+          path: knock_knock-${{ needs.setup.outputs.version }}.apk
 
   ios:
     name: Build iOS
@@ -111,13 +103,13 @@ jobs:
       - name: Package iOS app
         run: |
           cd build/ios/iphoneos
-          zip -r ../../../knock_knock-${{ needs.setup.outputs.version }}.zip *.app
+          zip -r ../../../knock_knock-${{ needs.setup.outputs.version }}-ios.zip *.app
 
       - name: Upload iOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios
-          path: knock_knock-${{ needs.setup.outputs.version }}.zip
+          path: knock_knock-${{ needs.setup.outputs.version }}-ios.zip
 
   linux:
     name: Build Linux
@@ -154,13 +146,13 @@ jobs:
       - name: Package Linux app
         run: |
           cd build/linux/x64/release/bundle
-          zip -r ../../../../../knock_knock-${{ needs.setup.outputs.version }}.zip *
+          zip -r ../../../../../knock_knock-${{ needs.setup.outputs.version }}-linux.zip *
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux
-          path: knock_knock-${{ needs.setup.outputs.version }}.zip
+          path: knock_knock-${{ needs.setup.outputs.version }}-linux.zip
 
   windows:
     name: Build Windows
@@ -184,13 +176,13 @@ jobs:
       - name: Package Windows app
         run: |
           cd build/windows/x64/runner/Release
-          Compress-Archive -Path * -DestinationPath ../../../../../knock_knock-${{ needs.setup.outputs.version }}.zip
+          Compress-Archive -Path * -DestinationPath ../../../../../knock_knock-${{ needs.setup.outputs.version }}-windows.zip
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: knock_knock-${{ needs.setup.outputs.version }}.zip
+          path: knock_knock-${{ needs.setup.outputs.version }}-windows.zip
 
   release:
     name: Create GitHub Release
@@ -230,5 +222,6 @@ jobs:
           draft: false
           prerelease: false
           files: dist/*
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
