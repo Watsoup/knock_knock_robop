@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+void main() async {
+  await dotenv.load();
   runApp(const MyApp());
 }
 
@@ -55,8 +57,7 @@ class _KnockKnockPageState extends State<KnockKnockPage> {
       webhook.progress = 1.0;
     });
 
-    const webhookUrl =
-        '';
+    final String webhookUrl = const String.fromEnvironment('WEBHOOK_URL');
 
     try {
       final _ = await http.post(
