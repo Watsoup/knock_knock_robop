@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logger/logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   if (!kIsWeb) {
-    await dotenv.load(fileName: ".env");
+    try {
+      await dotenv.load(fileName: ".env");
+    } catch (e) {
+      // .env file not found - continue without it
+      Logger().i('.env file not found, will use compile-time environment variables');
+    }
   }
   runApp(const MyApp());
 }
@@ -60,7 +66,17 @@ class _KnockKnockPageState extends State<KnockKnockPage> {
       webhook.progress = 1.0;
     });
 
-    final String webhookUrl = const String.fromEnvironment('WEBHOOK_URL');
+    // Try environment variable first, then fallback to dotenv
+    String webhookUrl = const String.fromEnvironment('WEBHOOK_URL');
+    if (webhookUrl.isEmpty && !kIsWeb) {
+      webhookUrl = dotenv.env['WEBHOOK_URL'] ?? '';
+    }
+
+    if (webhookUrl.isEmpty) {
+      Logger().w('No webhook URL configured - skipping webhook call');
+      _startWebhookCooldownTimer(webhook);
+      return;
+    }
 
     try {
       final _ = await http.post(
@@ -69,7 +85,7 @@ class _KnockKnockPageState extends State<KnockKnockPage> {
         body: '{"content": "$content"}',
       );
     } catch (e) {
-      print('Webhook error: $e');
+      Logger().e('Webhook error', e);
     }
 
     _startWebhookCooldownTimer(webhook);
@@ -202,9 +218,12 @@ class _KnockKnockPageState extends State<KnockKnockPage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          CooldownProgressBar(
-                            onCooldown: webhooks['eyes']!.onCooldown,
-                            progress: webhooks['eyes']!.progress,
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: CooldownProgressBar(
+                              onCooldown: webhooks['eyes']!.onCooldown,
+                              progress: webhooks['eyes']!.progress,
+                            ),
                           ),
                         ],
                       ),
@@ -221,9 +240,12 @@ class _KnockKnockPageState extends State<KnockKnockPage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          CooldownProgressBar(
-                            onCooldown: webhooks['come']!.onCooldown,
-                            progress: webhooks['come']!.progress,
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: CooldownProgressBar(
+                              onCooldown: webhooks['come']!.onCooldown,
+                              progress: webhooks['come']!.progress,
+                            ),
                           ),
                         ],
                       ),

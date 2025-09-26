@@ -70,7 +70,7 @@ jobs:
           java-version: '17'
 
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define=WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk knock_knock-${{ needs.setup.outputs.version }}.apk
@@ -98,7 +98,7 @@ jobs:
           channel: stable
 
       - name: Build iOS
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --dart-define=WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}
 
       - name: Package iOS app
         run: |
@@ -141,7 +141,7 @@ jobs:
             ninja-build
 
       - name: Build Linux
-        run: flutter build linux --release
+        run: flutter build linux --release --dart-define=WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}
 
       - name: Package Linux app
         run: |
@@ -171,7 +171,7 @@ jobs:
           channel: stable
 
       - name: Build Windows
-        run: flutter build windows --release
+        run: flutter build windows --release --dart-define=WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}
 
       - name: Package Windows app
         run: |
